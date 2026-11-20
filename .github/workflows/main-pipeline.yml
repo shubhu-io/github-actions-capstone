@@ -1,0 +1,35 @@
+name: Main Pipeline
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-test:
+    uses: ./.github/workflows/reusable-build-test.yml
+    with:
+      python_version: '3.12'
+      run_tests: true
+
+  docker:
+    needs: build-test
+    uses: ./.github/workflows/reusable-docker.yml
+    with:
+      image_name: ${{ github.repository }}
+      tag: 'latest'
+    secrets:
+      docker_username: ${{ github.actor }}
+      docker_token: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy:
+    needs: docker
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Deploy
+        run: |
+          echo "Deploying image: ${{ needs.docker.outputs.image_url }} to production"
