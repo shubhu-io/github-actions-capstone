@@ -11,7 +11,7 @@ A small Flask service with two endpoints:
 
 | Route | Response |
 |-------|----------|
-| `/` | `{"message": "Hello from the capstone app!"}` |
+| `/` | `{"message": "Hello from the capstone app v1.1!"}` |
 | `/health` | `{"status": "ok"}` |
 
 ```bash
@@ -35,7 +35,8 @@ PR opened/synchronized
   └─ build-test (reusable) → pr-comment          # tests only, no image push
 
 Push to main
-  └─ build-test (reusable) → docker (reusable, GHCR: latest + sha-*) → deploy (production environment)
+  └─ build-test (reusable) → docker (GHCR: latest + sha-*)
+      → scan (Trivy, CRITICAL gate) → deploy (production approval)
 
 Every 12 hours / manual
   └─ health-check: pull image → run container → curl /health → job summary
@@ -46,8 +47,11 @@ Every 12 hours / manual
 | `reusable-build-test.yml` | `workflow_call` | Install deps, run unit tests, return `test_result` |
 | `reusable-docker.yml` | `workflow_call` | Build and push `latest` + `sha-<commit>` to GHCR |
 | `pr-pipeline.yml` | `pull_request` → `main` | Tests only; never receives registry credentials |
-| `main-pipeline.yml` | `push` → `main` | Test → publish image → deploy behind `production` |
+| `main-pipeline.yml` | `push` → `main` | Test → publish image → Trivy scan → approved deploy |
 | `health-check.yml` | `schedule` + `workflow_dispatch` | Pull the published image and probe `/health` |
+
+The `production` environment requires a reviewer before the deploy job starts, and
+the Trivy scan blocks the release if a CRITICAL vulnerability is found.
 
 ## Manual runs
 
