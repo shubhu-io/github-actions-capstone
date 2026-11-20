@@ -21,8 +21,8 @@ jobs:
     with:
       image_name: ${{ github.repository }}
       tag: 'latest'
+      registry_username: ${{ github.repository_owner }}
     secrets:
-      docker_username: ${{ github.actor }}
       docker_token: ${{ secrets.GITHUB_TOKEN }}
 
   deploy:
