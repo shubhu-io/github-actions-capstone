@@ -21,6 +21,8 @@ on:
 jobs:
   build-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       test_result: ${{ steps.result.outputs.test_result }}
     steps:

@@ -26,6 +26,9 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     outputs:
       image_url: ${{ steps.meta.outputs.image_url }}
     steps:
